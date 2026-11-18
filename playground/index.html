@@ -102,8 +102,8 @@ pre{margin:0;padding:12px;background:var(--bg);border-radius:8px;overflow:auto;f
       <table><thead><tr><th>Project</th><th>Owner</th><th>Deadline</th></tr></thead>
       <tbody><tr><td>Website relaunch</td><td>Sam</td><td>Jan 30</td></tr><tr><td>Data migration</td><td>Ari</td><td>Feb 12</td></tr><tr><td>Q1 review</td><td>Lee</td><td>Mar 3</td></tr></tbody></table>
     </div>
-    <div class="fb-hover" style="left:calc(33.3% + 4px);top:118px;width:calc(33.3% - 18px);height:66px"></div>
-    <button class="fb-pin" style="left:62%;top:150px" aria-expanded="true">1</button>
+    <div class="fb-hover" id="hoverBox"></div>
+    <button class="fb-pin" id="pin1" aria-expanded="true">1</button>
     <button class="fb-pin" style="left:30%;top:268px">2</button>
     <div class="fb-card fb-note" style="left:calc(62% + 16px);top:160px">
       <div class="fb-meta"><b>Jordan Lee</b> · Nov 18, 10:42 AM</div>
@@ -196,6 +196,13 @@ function render(){
   try { localStorage.setItem('fb-theme-v2', JSON.stringify({t, labels})); } catch {}
 }
 if (!CSS.supports('field-sizing','content')) stage.querySelectorAll('textarea').forEach(ta => { const g = () => { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + ta.offsetHeight - ta.clientHeight + 'px'; }; ta.addEventListener('input', g); g(); });
+// Outline the "At risk" card the way the layer does: its box plus 3px all round, measured from the real element.
+function placeHover(){
+  const k = kpiTarget.getBoundingClientRect(), st = stage.getBoundingClientRect();
+  Object.assign(hoverBox.style, {left: k.left - st.left - 3 + 'px', top: k.top - st.top - 3 + 'px', width: k.width + 6 + 'px', height: k.height + 6 + 'px'});
+  Object.assign(pin1.style, {left: k.left - st.left + k.width * .88 + 'px', top: k.top - st.top + k.height * .5 + 'px'});
+}
+new ResizeObserver(placeHover).observe(stage);
 sync();
 </script>
 </body>
