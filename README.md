@@ -1,10 +1,9 @@
 # airtable-interface-feedback
 
-Google Docs-style review comments for **Airtable custom interface extensions**. Testers click **Leave Comments** (or right-click anything), pin a note to a specific element, and reply in threads. Every note is saved as a record in an **Interface Feedback** table in the same base. Each record holds a detailed trace (element, its text, a context trail, HTML, React component names, computed styles, page state, build) that you or your coding agent can use to fix it in the next revision.
+**Figma-style pinned comments for Airtable custom interfaces.** Testers click anything, leave a note, and reply in threads. Every note is saved as a record in your base, with the technical detail a developer or agent needs to fix it. Think BugHerd or Marker.io, but the feedback lives in Airtable.
 
 - **One file:** `src/feedback.tsx`. It uses only React and `@airtable/blocks/interface`, has no other dependencies, and injects its own CSS.
-- **Safe to ship:** if the table isn't in the base, nothing renders.
-- **Themeable:** design a theme in `playground/index.html` and paste it in.
+- **Themeable:** design a theme in the [playground](https://jpaulgale.github.io/airtable-interface-feedback/playground/) and paste it in.
 
 ## Quick start
 
@@ -26,7 +25,7 @@ Google Docs-style review comments for **Airtable custom interface extensions**. 
        </>;
    }
    ```
-4. **Theme it** (optional): open `playground/index.html`, choose colours, radius, font, pin shape, button corner and any of the text. Then copy the **Theme (TS)** output over `FEEDBACK_THEME` in `feedback.tsx`, or pass it as the `theme` prop.
+4. **Theme it** (optional): open the [playground](https://jpaulgale.github.io/airtable-interface-feedback/playground/) (or `playground/index.html` locally), choose colours, radius, font, pin shape, button corner and any of the text. Then copy the **Theme (TS)** output over `FEEDBACK_THEME` in `feedback.tsx`, or pass it as the `theme` prop.
 
 Releasing to Airtable works the same as for any other change (`block release`, or your usual AI-element flow).
 
@@ -76,4 +75,4 @@ Filter the table to `Status = Open` and group it by Page. To fix notes with an a
 - `uv run scripts/sync_playground.py` copies the CSS from `src/feedback.tsx` into the playground. Run it after you change any styles.
 - `example/App.tsx` shows a minimal extension entry.
 
-Credit: inspired by [Agentation](https://agentation.dev).
+**Acknowledgements:** recording React component names and computed styles in the technical detail was borrowed from [Agentation](https://agentation.dev).

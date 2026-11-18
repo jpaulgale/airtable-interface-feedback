@@ -1,4 +1,4 @@
-// Interface Feedback — Google Docs-style review notes for Airtable custom interface extensions.
+// Interface Feedback — Figma-style pinned comments for Airtable custom interface extensions.
 // airtable-interface-feedback · MIT
 //
 // Drop-in: copy this one file next to your interface's index.tsx, render
@@ -424,7 +424,7 @@ function FeedbackLayerInner({table, page, theme, build, L}: {table: Table; page:
         put('status', {name: 'Open'});
         await table.createRecordAsync(fields);
     };
-    // Re-read the cell just before writing so a reply posted meanwhile by someone else isn't overwritten.
+    // Appends to the Replies cell as this client currently sees it (live-synced by useRecords).
     const reply = async (id: string, text: string) => {
         const fld = f('replies');
         if (!fld) throw new Error('the table has no Replies field');
