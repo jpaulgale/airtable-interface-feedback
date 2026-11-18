@@ -477,7 +477,7 @@ function FeedbackLayerInner({table, page, theme, build, L}: {table: Table; page:
                     </div>
                 </FbDismiss>
             )}
-            {draft && <FbComposer draft={draft} who={user?.name || user?.email || 'you'} onCancel={() => setDraft(null)}
+            {draft && <FbComposer draft={draft} onCancel={() => setDraft(null)}
                 onSave={async (text) => { await save(draft, text); setDraft(null); }} />}
             {/* Compact: accent pill with the chat icon (and a count of open notes); the label slides out on hover or
                 keyboard focus, and stays out in comment mode so "Exit comment mode" is always visible. */}
@@ -524,7 +524,7 @@ function FbReplyBox({onSend}: {onSend: (t: string) => Promise<void>}): React.Rea
         </div>
     );
 }
-function FbComposer({draft, who, onCancel, onSave}: {draft: FbDraft; who: string; onCancel: () => void; onSave: (t: string) => Promise<void>}): React.ReactElement {
+function FbComposer({draft, onCancel, onSave}: {draft: FbDraft; onCancel: () => void; onSave: (t: string) => Promise<void>}): React.ReactElement {
     const [text, setText] = useState('');
     const [busy, setBusy] = useState(false);
     const [err, setErr] = useState('');
@@ -540,7 +540,7 @@ function FbComposer({draft, who, onCancel, onSave}: {draft: FbDraft; who: string
             {draft.text && <p className="fb-quote">{draft.text}</p>}
             <textarea autoFocus value={text} placeholder="What should change here?" onChange={(e) => setText(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); submit(); } }} />
-            <div className="fb-meta">Posting as {who}. Enter to save, Shift+Enter for a new line. Everyone can see this comment.</div>
+            <div className="fb-meta">Enter to save, Shift+Enter for a new line. Everyone can see this comment.</div>
             {err && <div className="fb-err" role="alert">{err}</div>}
             <div className="fb-row">
                 <button type="button" className="fb-btn" onClick={onCancel}>Cancel</button>
