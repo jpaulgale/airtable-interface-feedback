@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Feedback Theme Playground</title>
+<style>
+/* @css:start — synced from src/feedback.tsx by scripts/sync_playground.py; don't edit here */
+.fb-root{font-family:var(--fb-font);font-size:14px;color:var(--fb-ink)}
+.fb-fab{position:fixed;left:var(--fb-fab-offset);bottom:var(--fb-fab-offset);z-index:2147483000;display:flex;align-items:center;height:36px;padding:0 9px;border:0;border-radius:999px;background:var(--fb-accent);color:var(--fb-on-accent);font:600 13px/1 var(--fb-font);box-shadow:0 3px 10px rgba(0,0,0,.22);cursor:pointer}
+.fb-root[data-fab=right] .fb-fab{left:auto;right:var(--fb-fab-offset)}
+.fb-fab-icon{position:relative;display:flex}
+.fb-fab-n{position:absolute;top:-7px;right:-8px;min-width:16px;height:16px;padding:0 4px;box-sizing:border-box;border-radius:8px;background:var(--fb-on-accent);color:var(--fb-accent);font:700 10px/16px system-ui,sans-serif;text-align:center}
+.fb-fab-label{max-width:0;overflow:hidden;white-space:nowrap;transition:max-width .2s ease-out,margin-left .2s ease-out}
+.fb-fab:hover .fb-fab-label,.fb-fab:focus-visible .fb-fab-label,.fb-fab[aria-pressed=true] .fb-fab-label{max-width:180px;margin-left:8px}
+.fb-fab:hover .fb-fab-n,.fb-fab:focus-visible .fb-fab-n{display:none}
+@media (prefers-reduced-motion:reduce){.fb-fab-label{transition:none}}
+.fb-fab:focus-visible,.fb-btn:focus-visible,.fb-pin:focus-visible{outline:3px solid var(--fb-ink);outline-offset:2px}
+.fb-fab[aria-pressed=true]{background:var(--fb-ink);color:var(--fb-surface)}
+.fb-banner{position:fixed;bottom:0;left:0;right:0;z-index:2147482998;display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:14px 16px 14px 220px;background:var(--fb-ink);color:var(--fb-surface);font-size:14px}
+.fb-root[data-fab=right] .fb-banner{padding:14px 220px 14px 16px}
+@media (max-width:640px){.fb-banner,.fb-root[data-fab=right] .fb-banner{padding:10px 16px 68px;font-size:13px}}
+.fb-hover{position:fixed;z-index:2147482999;pointer-events:none;border:2px dashed var(--fb-accent);border-radius:4px;background:color-mix(in srgb,var(--fb-accent) 7%,transparent)}
+.fb-mode,.fb-mode *{cursor:crosshair!important}
+.fb-menu{position:fixed;z-index:2147483001;background:var(--fb-surface);border:1px solid var(--fb-border);border-radius:calc(var(--fb-radius) - 2px);box-shadow:0 6px 20px rgba(0,0,0,.2);padding:4px;min-width:200px}
+.fb-menu button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:10px 12px;border:0;background:none;color:inherit;border-radius:calc(var(--fb-radius) - 4px);font:inherit;cursor:pointer}
+.fb-menu button:hover,.fb-menu button:focus-visible{background:var(--fb-subtle);outline:none}
+.fb-card{position:fixed;z-index:2147483001;width:min(340px,calc(100vw - 32px));box-sizing:border-box;background:var(--fb-surface);color:var(--fb-ink);border:1px solid var(--fb-border);border-radius:var(--fb-radius);box-shadow:0 8px 28px rgba(0,0,0,.22);padding:14px;display:grid;gap:10px;cursor:auto}
+.fb-card *{cursor:auto}
+.fb-card h3{margin:0;font-size:15px}
+.fb-quote{margin:0;padding:6px 10px;border-left:3px solid var(--fb-accent);background:var(--fb-subtle);color:var(--fb-muted);font-size:13px;max-height:60px;overflow:hidden;overflow-wrap:anywhere}
+.fb-card textarea{width:100%;box-sizing:border-box;min-height:90px;padding:8px;border:1px solid var(--fb-border);border-radius:calc(var(--fb-radius) - 4px);background:var(--fb-surface);color:var(--fb-ink);font:inherit;resize:vertical}
+.fb-meta{font-size:12px;color:var(--fb-muted)}
+.fb-row{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.fb-btn{padding:8px 14px;border-radius:calc(var(--fb-radius) - 4px);border:1px solid var(--fb-border);background:var(--fb-surface);color:var(--fb-ink);font:600 13px var(--fb-font);cursor:pointer}
+.fb-btn.fb-primary{background:var(--fb-accent);border-color:var(--fb-accent);color:var(--fb-on-accent)}
+.fb-btn:disabled{opacity:.5;cursor:default}
+.fb-note{max-height:min(560px,calc(100vh - 32px));overflow-y:auto}
+.fb-thread{list-style:none;margin:0;padding:0 0 0 10px;border-left:2px solid var(--fb-border);display:grid;gap:10px}
+.fb-reply{display:flex;gap:8px;align-items:flex-end}
+.fb-reply textarea{min-height:38px;height:38px;flex:1}
+.fb-err{color:#b00020;font-size:13px}
+.fb-pin{position:fixed;z-index:2147483000;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:var(--fb-pin-radius);border:2px solid var(--fb-surface);background:var(--fb-accent);color:var(--fb-on-accent);font:700 12px/22px system-ui,sans-serif;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.3);cursor:pointer!important;padding:0}
+.fb-pin[aria-expanded=true]{background:var(--fb-ink);color:var(--fb-surface)}
+/* @css:end */
+:root{--bg:#f6f6f7;--panel:#fff;--text:#18181b;--line:#e4e4e7;--dim:#71717a}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#111113;--panel:#1b1b1f;--text:#ececef;--line:#2e2e33;--dim:#9a9aa3}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 system-ui,sans-serif}
+.app{display:grid;grid-template-columns:320px 1fr;min-height:100vh}
+@media (max-width:860px){.app{grid-template-columns:1fr}}
+aside{background:var(--panel);border-right:1px solid var(--line);padding:20px 16px;display:grid;gap:18px;align-content:start;overflow:auto}
+h1{font-size:17px;margin:0}
+.lede{margin:4px 0 0;color:var(--dim);font-size:13px}
+fieldset{border:0;padding:0;margin:0;display:grid;gap:10px}
+legend{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--dim);margin-bottom:8px}
+.ctl{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px}
+.ctl input[type=color]{width:40px;height:28px;border:1px solid var(--line);border-radius:6px;padding:0;background:none}
+.ctl input[type=text],.ctl select{width:170px;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--text);font:inherit}
+.ctl input[type=range]{width:140px}
+.presets{display:flex;flex-wrap:wrap;gap:6px}
+.presets button,.tool{padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:var(--panel);color:var(--text);font:inherit;font-size:12px;cursor:pointer}
+.presets button:hover,.tool:hover{border-color:var(--dim)}
+.warn{font-size:12px;color:#b45309}
+main{padding:20px 16px;display:grid;gap:16px;align-content:start;min-width:0}
+.stage{position:relative;height:620px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fafafa;color:#222;contain:layout}
+.stage .fb-fab,.stage .fb-banner,.stage .fb-pin,.stage .fb-card,.stage .fb-menu,.stage .fb-hover{position:absolute}
+.mock{padding:22px 24px;font-family:system-ui,sans-serif}
+.mock h2{margin:0 0 4px;font-size:20px}.mock p{margin:0 0 18px;color:#666}
+.mock .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+.mock .kpi{background:#fff;border:1px solid #e5e5e5;border-radius:8px;padding:12px}.mock .kpi b{display:block;font-size:22px}
+.mock table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #e5e5e5;border-radius:8px}
+.mock td,.mock th{padding:9px 12px;border-bottom:1px solid #eee;text-align:left;font-size:13px}
+.out{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;display:grid;gap:10px}
+.out header{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.tabs{display:flex;gap:6px}.tabs .tool[aria-selected=true]{background:var(--text);color:var(--panel)}
+pre{margin:0;padding:12px;background:var(--bg);border-radius:8px;overflow:auto;font:12px/1.5 ui-monospace,monospace;white-space:pre-wrap}
+</style>
+</head>
+<body>
+<div class="app">
+<aside>
+  <div><h1>Feedback theme</h1><p class="lede">Style the comment layer to match the interface, then copy the theme into <code>feedback.tsx</code> or give the prompt to your agent.</p></div>
+  <fieldset><legend>Presets</legend><div class="presets" id="presets"></div></fieldset>
+  <fieldset id="colors"><legend>Colors</legend></fieldset>
+  <fieldset><legend>Shape &amp; type</legend>
+    <label class="ctl">Font stack <input type="text" data-k="font"></label>
+    <label class="ctl">Corner radius <input type="range" min="0" max="18" data-k="radius"></label>
+    <label class="ctl">Pin shape <select data-k="pinShape"><option value="drop">Drop</option><option value="circle">Circle</option><option value="square">Square</option></select></label>
+    <label class="ctl">Button corner <select data-k="fabSide"><option value="left">Bottom left</option><option value="right">Bottom right</option></select></label>
+    <label class="ctl">Button offset <input type="range" min="8" max="48" data-k="fabOffset"></label>
+  </fieldset>
+  <fieldset><legend>Labels</legend>
+    <label class="ctl">Button <input type="text" data-l="button"></label>
+    <label class="ctl">Mode title <input type="text" data-l="modeTitle"></label>
+  </fieldset>
+  <div class="warn" id="warn" role="status"></div>
+</aside>
+<main>
+  <div class="stage fb-root" id="stage">
+    <div class="mock">
+      <h2>Projects</h2><p>Sample interface — the feedback layer sits on top.</p>
+      <div class="kpis"><div class="kpi">Active<b>24</b></div><div class="kpi" id="kpiTarget">At risk<b>3</b></div><div class="kpi">Due this week<b>7</b></div></div>
+      <table><thead><tr><th>Project</th><th>Owner</th><th>Deadline</th></tr></thead>
+      <tbody><tr><td>Website relaunch</td><td>Sam</td><td>Jan 30</td></tr><tr><td>Data migration</td><td>Ari</td><td>Feb 12</td></tr><tr><td>Q1 review</td><td>Lee</td><td>Mar 3</td></tr></tbody></table>
+    </div>
+    <div class="fb-hover" style="left:calc(33.3% + 4px);top:118px;width:calc(33.3% - 18px);height:66px"></div>
+    <button class="fb-pin" style="left:62%;top:150px" aria-expanded="true">1</button>
+    <button class="fb-pin" style="left:30%;top:268px">2</button>
+    <div class="fb-card fb-note" style="left:calc(62% + 16px);top:160px">
+      <div class="fb-meta"><b>Jordan Lee</b> · Nov 18, 10:42 AM</div>
+      <div>"At risk" should link to the filtered list.</div>
+      <p class="fb-quote">At risk 3</p>
+      <ol class="fb-thread"><li><div class="fb-meta"><b>Dev</b> · Nov 18, 11:05 AM</div><div>Good call — next build.</div></li></ol>
+      <div class="fb-reply"><textarea placeholder="Reply…"></textarea><button class="fb-btn fb-primary">Reply</button></div>
+      <div class="fb-row"><button class="fb-btn">Close</button><button class="fb-btn">Mark resolved</button></div>
+    </div>
+    <div class="fb-menu" style="left:40px;top:360px"><button><span id="i1"></span> Leave a comment here</button><button><span id="i2"></span> Show all comments (2)</button></div>
+    <div class="fb-banner"><span><b id="modeTitle">Comment mode</b> — click anything on the page to leave a comment.</span></div>
+    <button class="fb-fab" aria-pressed="true"><span class="fb-fab-icon" id="i3"></span><span class="fb-fab-label" id="fabExit">Exit comment mode</span></button>
+    <button class="fb-fab" id="fabIdle" style="bottom:calc(var(--fb-fab-offset) + 48px)"><span class="fb-fab-icon"><span id="i4"></span><span class="fb-fab-n">2</span></span><span class="fb-fab-label" id="fabLabel">Leave Comments</span></button>
+  </div>
+  <section class="out">
+    <header><div class="tabs" role="tablist"><button class="tool" role="tab" aria-selected="true" data-tab="ts">Theme (TS)</button><button class="tool" role="tab" aria-selected="false" data-tab="prompt">Agent prompt</button></div>
+    <button class="tool" id="copy">Copy</button></header>
+    <pre id="code"></pre>
+  </section>
+</main>
+</div>
+<script>
+const COLORS = [['accent','Accent'],['accentText','Text on accent'],['ink','Ink (text, banner)'],['surface','Card surface'],['subtle','Subtle fill'],['border','Borders'],['muted','Secondary text']];
+const PRESETS = {
+  Indigo:{accent:'#4f46e5',accentText:'#ffffff',ink:'#18181b',surface:'#ffffff',subtle:'#f4f4f5',border:'#d4d4d8',muted:'#71717a',font:'system-ui, sans-serif',radius:10,fabSide:'left',fabOffset:16,pinShape:'drop'},
+  Airtable:{accent:'#166ee1',accentText:'#ffffff',ink:'#1d1f25',surface:'#ffffff',subtle:'#f2f4f8',border:'#d0d4dc',muted:'#616670',font:'Inter, system-ui, sans-serif',radius:8,fabSide:'left',fabOffset:16,pinShape:'circle'},
+  Forest:{accent:'#15803d',accentText:'#ffffff',ink:'#14231a',surface:'#ffffff',subtle:'#eef6f0',border:'#cfe0d4',muted:'#5b6b60',font:'Georgia, serif',radius:4,fabSide:'left',fabOffset:20,pinShape:'square'},
+  Magenta:{accent:'#e20074',accentText:'#ffffff',ink:'#191919',surface:'#ffffff',subtle:'#f7f7f7',border:'#cccccc',muted:'#666666',font:'system-ui, sans-serif',radius:10,fabSide:'left',fabOffset:16,pinShape:'drop'},
+  Night:{accent:'#f59e0b',accentText:'#1a1205',ink:'#f4f4f5',surface:'#1f1f23',subtle:'#2a2a30',border:'#3f3f46',muted:'#a1a1aa',font:'system-ui, sans-serif',radius:12,fabSide:'right',fabOffset:16,pinShape:'circle'},
+};
+const LABELS = {button:'Leave Comments',modeTitle:'Comment mode'};
+const PIN = {drop:'50% 50% 50% 0',circle:'50%',square:'6px'};
+const svg = d => `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${d}"/></svg>`;
+const IC = {c:'M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z',p:'M12 21s-6-5.3-6-10a6 6 0 0 1 12 0c0 4.7-6 10-6 10zM12 13a2 2 0 1 0 0-4 2 2 0 0 0 0 4z',x:'M18 6 6 18M6 6l12 12'};
+i1.innerHTML=svg(IC.c); i2.innerHTML=svg(IC.p); i3.innerHTML=svg(IC.x); i4.innerHTML=svg(IC.c);
+let t = {...PRESETS.Indigo}, labels = {...LABELS}, tab = 'ts';
+try { const s = JSON.parse(localStorage.getItem('fb-theme')||'null'); if (s) { t = {...t, ...s.t}; labels = {...labels, ...s.labels}; } } catch {}
+const colors = document.getElementById('colors');
+for (const [k, n] of COLORS) colors.insertAdjacentHTML('beforeend', `<label class="ctl">${n} <input type="color" data-k="${k}"></label>`);
+const presets = document.getElementById('presets');
+for (const n in PRESETS) { const b = document.createElement('button'); b.textContent = n; b.onclick = () => { t = {...PRESETS[n]}; sync(); }; presets.append(b); }
+document.querySelectorAll('[data-k]').forEach(el => el.addEventListener('input', () => { const k = el.dataset.k; t[k] = el.type === 'range' ? +el.value : el.value; render(); }));
+document.querySelectorAll('[data-l]').forEach(el => el.addEventListener('input', () => { labels[el.dataset.l] = el.value; render(); }));
+document.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => { tab = b.dataset.tab; document.querySelectorAll('[data-tab]').forEach(x => x.setAttribute('aria-selected', x === b)); render(); });
+copy.onclick = async () => { try { await navigator.clipboard.writeText(code.textContent); copy.textContent = 'Copied'; } catch { copy.textContent = 'Select & copy'; } setTimeout(() => copy.textContent = 'Copy', 1400); };
+function lum(h){const c=[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255).map(v=>v<=.03928?v/12.92:((v+.055)/1.055)**2.4);return .2126*c[0]+.7152*c[1]+.0722*c[2];}
+const ratio=(a,b)=>{const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05);};
+function sync(){ document.querySelectorAll('[data-k]').forEach(el => el.value = t[el.dataset.k]); document.querySelectorAll('[data-l]').forEach(el => el.value = labels[el.dataset.l]); render(); }
+function render(){
+  const s = stage.style;
+  s.setProperty('--fb-accent',t.accent); s.setProperty('--fb-on-accent',t.accentText); s.setProperty('--fb-ink',t.ink); s.setProperty('--fb-surface',t.surface);
+  s.setProperty('--fb-subtle',t.subtle); s.setProperty('--fb-border',t.border); s.setProperty('--fb-muted',t.muted); s.setProperty('--fb-font',t.font);
+  s.setProperty('--fb-radius',t.radius+'px'); s.setProperty('--fb-fab-offset',t.fabOffset+'px'); s.setProperty('--fb-pin-radius',PIN[t.pinShape]);
+  stage.dataset.fab = t.fabSide; fabLabel.textContent = labels.button; modeTitle.textContent = labels.modeTitle;
+  const w = [];
+  if (ratio(t.accent,t.accentText) < 4.5) w.push(`Accent / text on accent contrast ${ratio(t.accent,t.accentText).toFixed(1)}:1 (aim for 4.5).`);
+  if (ratio(t.ink,t.surface) < 4.5) w.push(`Ink / surface contrast ${ratio(t.ink,t.surface).toFixed(1)}:1 (aim for 4.5).`);
+  if (ratio(t.muted,t.surface) < 4.5) w.push(`Secondary text contrast ${ratio(t.muted,t.surface).toFixed(1)}:1 (aim for 4.5).`);
+  warn.textContent = w.join(' ');
+  const obj = JSON.stringify(t, null, 4).replace(/"(\w+)":/g, '$1:').replace(/"/g, "'");
+  const lbl = Object.entries(labels).filter(([k,v]) => v !== LABELS[k]);
+  const lblTs = lbl.length ? `\nconst FEEDBACK_LABELS = {${lbl.map(([k,v]) => `${k}: ${JSON.stringify(v)}`).join(', ')}};` : '';
+  const use = `<FeedbackLayer base={base} page="My Page" theme={FEEDBACK_THEME}${lbl.length ? ' labels={FEEDBACK_LABELS}' : ''} />`;
+  code.textContent = tab === 'ts'
+    ? `// In feedback.tsx, replace FEEDBACK_THEME (or keep it and pass this as \`theme\`)\nexport const FEEDBACK_THEME: FeedbackTheme = ${obj};${lblTs}\n\n// In your App:\n${use}`
+    : `Add Google Docs-style review comments to this Airtable custom interface extension using airtable-interface-feedback.\n\n1. Copy src/feedback.tsx from the airtable-interface-feedback repo next to this extension's entry file.\n2. In feedback.tsx, set FEEDBACK_THEME to:\n${obj}\n3. Import { FeedbackLayer } from './feedback' and render ${use} once at the top level of the App, with a page name per interface page.${lbl.length ? `\n   Pass labels={${JSON.stringify(Object.fromEntries(lbl))}}.` : ''}\n4. Make sure the base has an "Interface Feedback" table: run \`AIRTABLE_PAT=... uv run scripts/create_table.py <baseId>\` from the repo (or create the fields listed in its README).\n5. Rebuild/release the extension, open the page, click the feedback button, leave a test comment, and confirm a record appears in the table.`;
+  try { localStorage.setItem('fb-theme', JSON.stringify({t, labels})); } catch {}
+}
+sync();
+</script>
+</body>
+</html>

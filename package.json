@@ -1,0 +1,22 @@
+{
+  "name": "airtable-interface-feedback",
+  "version": "1.0.0",
+  "description": "Google Docs-style review comments for Airtable custom interfaces, saved to an Airtable table",
+  "directories": {
+    "example": "example"
+  },
+  "scripts": {
+    "typecheck": "tsc",
+    "playground": "open playground/index.html"
+  },
+  "license": "MIT",
+  "type": "commonjs",
+  "devDependencies": {
+    "@airtable/blocks": "^0.0.0-experimental-8575f0e0d-20260428",
+    "@types/react": "^18.3.31",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "typescript": "^5.6.3"
+  },
+  "private": true
+}
