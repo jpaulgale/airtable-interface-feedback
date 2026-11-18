@@ -31,7 +31,7 @@ export const FEEDBACK_THEME: FeedbackTheme = {
 export const FB_LABELS = {
     button: 'Leave Comments', exit: 'Exit comment mode', modeTitle: 'Comment mode',
     modeHint: 'click anything on the page to leave a comment.', modeHintReadOnly: 'click a pin to read a comment.',
-    menuHere: 'Leave a comment here', menuSelection: 'Leave a comment on selected text', menuShowAll: 'Show all comments',
+    menuHere: 'Leave a comment here', menuShowAll: 'Show all comments',
     composerTitle: 'Leave a comment', composerPlaceholder: 'What should change here?',
     composerHint: 'Enter to save, Shift+Enter for a new line. Everyone can see this comment.',
     cancel: 'Cancel', save: 'Save comment', saving: 'Saving…',
@@ -336,21 +336,14 @@ function FeedbackLayerInner({table, page, theme, build, L}: {table: Table; page:
         }
     }, []);
 
-    // Right-click anywhere (except text fields and selected text, which keep the browser's menu).
+    // Right-click on page content opens the comment menu. The browser's own menu is left alone wherever people
+    // expect it: text fields, links, and any time text is selected (so Copy always works).
     useEffect(() => {
         const onMenu = (e: MouseEvent) => {
             const t = e.target as Element;
-            if (fbIsOurs(t) || !canWrite || t.closest('input,textarea,[contenteditable=true]')) return;
+            if (fbIsOurs(t) || !canWrite || t.closest('input,textarea,select,[contenteditable=""],[contenteditable=true],a[href]')) return;
             const sel = window.getSelection();
-            const selected = sel && !sel.isCollapsed ? String(sel).trim().replace(/\s+/g, ' ').slice(0, 500) : '';
-            if (selected) {
-                const node = sel!.getRangeAt(0).commonAncestorContainer;
-                const host = (node.nodeType === 1 ? node : node.parentElement) as Element;
-                e.preventDefault();
-                setDraft(null);
-                setMenu({x: e.clientX, y: e.clientY, draft: fbDraftAt(host, e.clientX, e.clientY, page, selected)});
-                return;
-            }
+            if (sel && !sel.isCollapsed && String(sel).trim()) return;
             e.preventDefault();
             setDraft(null);
             setMenu({x: e.clientX, y: e.clientY, draft: fbDraftAt(fbHit(t, e.clientX, e.clientY), e.clientX, e.clientY, page)});
@@ -482,7 +475,7 @@ function FeedbackLayerInner({table, page, theme, build, L}: {table: Table; page:
             {menu && (
                 <FbDismiss onDismiss={() => setMenu(null)}>
                     <div className="fb-menu" role="menu" style={fbClamp(menu.x, menu.y, 260, 160)}>
-                        <button type="button" role="menuitem" autoFocus onClick={() => { setDraft(menu.draft); setMenu(null); }}><FbIconComment /> {menu.draft.selected ? L.menuSelection : L.menuHere}</button>
+                        <button type="button" role="menuitem" autoFocus onClick={() => { setDraft(menu.draft); setMenu(null); }}><FbIconComment /> {L.menuHere}</button>
                         <button type="button" role="menuitem" onClick={() => { setMode(true); setMenu(null); }}>
                             <FbIconPins /> {L.menuShowAll} ({notes.length})
                         </button>
