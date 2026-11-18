@@ -19,11 +19,13 @@ import {type Base, type Table} from '@airtable/blocks/interface/models';
 // ---- Theme: design one at playground/index.html and paste the result over this object (or pass `theme`). ----
 export type FeedbackTheme = {
     accent: string; accentText: string; ink: string; surface: string; subtle: string; border: string; muted: string;
+    /** 'inherit' = whatever font the interface already uses. Any other value is a CSS font stack; the layer doesn't
+     *  load fonts, so the interface must already have it (many Airtable orgs block external font CDNs). */
     font: string; radius: number; fabSide: 'left' | 'right'; fabOffset: number; pinShape: 'drop' | 'circle' | 'square';
 };
 export const FEEDBACK_THEME: FeedbackTheme = {
     accent: '#166ee1', accentText: '#ffffff', ink: '#1d1f25', surface: '#ffffff', subtle: '#f2f4f8', border: '#d0d4dc',
-    muted: '#616670', font: 'Inter, system-ui, sans-serif', radius: 8, fabSide: 'left', fabOffset: 16, pinShape: 'circle',
+    muted: '#616670', font: 'inherit', radius: 8, fabSide: 'left', fabOffset: 16, pinShape: 'circle',
 };
 // Every piece of text the layer shows. Override any of them with the `labels` prop (the playground writes this for you).
 export const FB_LABELS = {
@@ -52,7 +54,7 @@ const PIN_RADIUS = {drop: '50% 50% 50% 0', circle: '50%', square: '6px'};
 function fbThemeVars(t: FeedbackTheme): React.CSSProperties {
     return {
         '--fb-accent': t.accent, '--fb-on-accent': t.accentText, '--fb-ink': t.ink, '--fb-surface': t.surface, '--fb-subtle': t.subtle,
-        '--fb-border': t.border, '--fb-muted': t.muted, '--fb-font': t.font, '--fb-radius': `${t.radius}px`,
+        '--fb-border': t.border, '--fb-muted': t.muted, '--fb-font': t.font === 'inherit' ? getComputedStyle(document.body).fontFamily : t.font, '--fb-radius': `${t.radius}px`,
         '--fb-fab-offset': `${t.fabOffset}px`, '--fb-pin-radius': PIN_RADIUS[t.pinShape],
     } as React.CSSProperties;
 }

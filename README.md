@@ -27,6 +27,8 @@
    ```
 4. **Theme it** (optional): open the [playground](https://jpaulgale.github.io/airtable-interface-feedback/playground/) (or `playground/index.html` locally), choose colours, radius, font, pin shape, button corner and any of the text. Then copy the **Theme (TS)** output over `FEEDBACK_THEME` in `feedback.tsx`, or pass it as the `theme` prop.
 
+**Fonts:** by default the layer uses the interface's own font. If you pick a different font, your interface has to load it. The layer never fetches fonts, and many Airtable orgs block font CDNs (if so, bundle the font or serve it from an Airtable attachment). The playground loads Google Fonts only for the preview.
+
 Releasing to Airtable works the same as for any other change (`block release`, or your usual AI-element flow).
 
 ### Handing it to an agent

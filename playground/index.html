@@ -62,6 +62,8 @@ legend{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.0
 .presets button,.tool{padding:6px 10px;border:1px solid var(--line);border-radius:999px;background:var(--panel);color:var(--text);font:inherit;font-size:12px;cursor:pointer}
 .presets button:hover,.tool:hover{border-color:var(--dim)}
 .stack{display:grid;gap:4px;font-size:13px}.stack input{padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--text);font:inherit}
+[hidden]{display:none!important}
+.hint{margin:0;font-size:12px;color:var(--dim)}
 .warn{font-size:12px;color:#b45309}
 main{padding:20px 16px;display:grid;gap:16px;align-content:start;min-width:0}
 .stage{position:relative;height:760px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fafafa;color:#222;contain:layout}
@@ -85,7 +87,22 @@ pre{margin:0;padding:12px;background:var(--bg);border-radius:8px;overflow:auto;f
   <fieldset><legend>Presets</legend><div class="presets" id="presets"></div></fieldset>
   <fieldset id="colors"><legend>Colors</legend></fieldset>
   <fieldset><legend>Shape &amp; type</legend>
-    <label class="ctl">Font stack <input type="text" data-k="font"></label>
+    <label class="ctl">Font <select id="fontPick">
+      <option value="inherit">Same as interface</option>
+      <option value="system-ui, sans-serif">System UI</option>
+      <option value="'Inter', system-ui, sans-serif">Inter</option>
+      <option value="'Roboto', system-ui, sans-serif">Roboto</option>
+      <option value="'Open Sans', system-ui, sans-serif">Open Sans</option>
+      <option value="'Lato', system-ui, sans-serif">Lato</option>
+      <option value="'Source Sans 3', system-ui, sans-serif">Source Sans 3</option>
+      <option value="'IBM Plex Sans', system-ui, sans-serif">IBM Plex Sans</option>
+      <option value="'Work Sans', system-ui, sans-serif">Work Sans</option>
+      <option value="'Merriweather', Georgia, serif">Merriweather (serif)</option>
+      <option value="Georgia, serif">Georgia (serif)</option>
+      <option value="custom">Custom…</option>
+    </select></label>
+    <label class="stack" id="fontCustomWrap" hidden>Custom font stack <input type="text" id="fontCustom" placeholder="'Brand Sans', system-ui, sans-serif"></label>
+    <p class="hint" id="fontStatus" role="status"></p>
     <label class="ctl">Corner radius <input type="range" min="0" max="18" data-k="radius"></label>
     <label class="ctl">Pin shape <select data-k="pinShape"><option value="drop">Drop</option><option value="circle">Circle</option><option value="square">Square</option></select></label>
     <label class="ctl">Button corner <select data-k="fabSide"><option value="left">Bottom left</option><option value="right">Bottom right</option></select></label>
@@ -135,12 +152,54 @@ pre{margin:0;padding:12px;background:var(--bg);border-radius:8px;overflow:auto;f
 <script>
 const COLORS = [['accent','Accent'],['accentText','Text on accent'],['ink','Ink (text, banner)'],['surface','Card surface'],['subtle','Subtle fill'],['border','Borders'],['muted','Secondary text']];
 const PRESETS = {
-  Airtable:{accent:'#166ee1',accentText:'#ffffff',ink:'#1d1f25',surface:'#ffffff',subtle:'#f2f4f8',border:'#d0d4dc',muted:'#616670',font:'Inter, system-ui, sans-serif',radius:8,fabSide:'left',fabOffset:16,pinShape:'circle'},
-  Indigo:{accent:'#4f46e5',accentText:'#ffffff',ink:'#18181b',surface:'#ffffff',subtle:'#f4f4f5',border:'#d4d4d8',muted:'#71717a',font:'system-ui, sans-serif',radius:10,fabSide:'left',fabOffset:16,pinShape:'drop'},
-  Forest:{accent:'#15803d',accentText:'#ffffff',ink:'#14231a',surface:'#ffffff',subtle:'#eef6f0',border:'#cfe0d4',muted:'#5b6b60',font:'Georgia, serif',radius:4,fabSide:'left',fabOffset:20,pinShape:'square'},
-  Rose:{accent:'#db2777',accentText:'#ffffff',ink:'#1f1720',surface:'#ffffff',subtle:'#fdf2f8',border:'#f1d1e2',muted:'#6b5563',font:'system-ui, sans-serif',radius:10,fabSide:'left',fabOffset:16,pinShape:'drop'},
-  Night:{accent:'#f59e0b',accentText:'#1a1205',ink:'#f4f4f5',surface:'#1f1f23',subtle:'#2a2a30',border:'#3f3f46',muted:'#a1a1aa',font:'system-ui, sans-serif',radius:12,fabSide:'right',fabOffset:16,pinShape:'circle'},
+  Airtable:{accent:'#166ee1',accentText:'#ffffff',ink:'#1d1f25',surface:'#ffffff',subtle:'#f2f4f8',border:'#d0d4dc',muted:'#616670',font:'inherit',radius:8,fabSide:'left',fabOffset:16,pinShape:'circle'},
+  Indigo:{accent:'#4f46e5',accentText:'#ffffff',ink:'#18181b',surface:'#ffffff',subtle:'#f4f4f5',border:'#d4d4d8',muted:'#71717a',font:'inherit',radius:10,fabSide:'left',fabOffset:16,pinShape:'drop'},
+  Forest:{accent:'#15803d',accentText:'#ffffff',ink:'#14231a',surface:'#ffffff',subtle:'#eef6f0',border:'#cfe0d4',muted:'#5b6b60',font:"'Merriweather', Georgia, serif",radius:4,fabSide:'left',fabOffset:20,pinShape:'square'},
+  Rose:{accent:'#db2777',accentText:'#ffffff',ink:'#1f1720',surface:'#ffffff',subtle:'#fdf2f8',border:'#f1d1e2',muted:'#6b5563',font:'inherit',radius:10,fabSide:'left',fabOffset:16,pinShape:'drop'},
+  Night:{accent:'#f59e0b',accentText:'#1a1205',ink:'#f4f4f5',surface:'#1f1f23',subtle:'#2a2a30',border:'#3f3f46',muted:'#a1a1aa',font:'inherit',radius:12,fabSide:'right',fabOffset:16,pinShape:'circle'},
 };
+// Fonts: the preview loads Google Fonts on demand so you can see them. The real layer never loads fonts.
+const GENERIC = /^(inherit|system-ui|sans-serif|serif|monospace|ui-\w+|-apple-system|georgia|arial|helvetica|times new roman|verdana)$/i;
+const firstFamily = (stack) => (stack.split(',')[0] || '').trim().replace(/^['"]|['"]$/g, '');
+const loaded = new Set();
+async function loadFont(stack){
+  const name = firstFamily(stack);
+  if (stack === 'inherit') { fontStatus.textContent = "Uses the interface's own font, so it always matches. Here that's the sample page's font."; return; }
+  if (GENERIC.test(name)) { fontStatus.textContent = `${name} is built into browsers.`; return; }
+  if (!loaded.has(name)) {
+    loaded.add(name);
+    const l = document.createElement('link'); l.rel = 'stylesheet';
+    l.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(name).replace(/%20/g, '+')}:wght@400;600;700&display=swap`;
+    document.head.append(l);
+    await new Promise(r => { l.onload = l.onerror = r; });
+  }
+  fontStatus.textContent = `Loading ${name}…`;
+  try { await document.fonts.load(`600 16px "${name}"`); } catch {}
+  if (firstFamily(t.font) !== name) return;
+  fontStatus.textContent = fontAvailable(name)
+    ? `${name} is showing in the preview. Your interface still has to load it itself.`
+    : `Couldn't find ${name} on Google Fonts or this computer, so the preview falls back to the next font in the stack.`;
+}
+// document.fonts.check() says true when there's nothing to load, so compare text widths against two fallbacks instead.
+function fontAvailable(name){
+  const c = fontAvailable.c || (fontAvailable.c = document.createElement('canvas').getContext('2d'));
+  const w = (f) => { c.font = `600 32px ${f}`; return c.measureText('mmmmmmmmmmlli WQ@#0123').width; };
+  return ['monospace', 'serif'].some((fb) => w(`"${name}", ${fb}`) !== w(fb));
+}
+function syncFont(){
+  const opt = [...fontPick.options].find(o => o.value === t.font);
+  fontPick.value = opt ? t.font : 'custom';
+  fontCustomWrap.hidden = !!opt;
+  if (!opt) fontCustom.value = t.font;
+  loadFont(t.font);
+}
+fontPick.addEventListener('change', () => {
+  if (fontPick.value === 'custom') { fontCustomWrap.hidden = false; fontCustom.focus(); if (fontCustom.value) { t.font = fontCustom.value; loadFont(t.font); render(); } return; }
+  fontCustomWrap.hidden = true; t.font = fontPick.value; loadFont(t.font); render();
+});
+let fontTimer;
+fontCustom.addEventListener('input', () => { t.font = fontCustom.value || 'inherit'; render(); clearTimeout(fontTimer); fontTimer = setTimeout(() => loadFont(t.font), 400); });
+document.fonts.addEventListener?.('loadingdone', () => render());
 const LABELS = {
   button:'Leave Comments', exit:'Exit comment mode', modeTitle:'Comment mode',
   modeHint:'click anything on the page to leave a comment.', modeHintReadOnly:'click a pin to read a comment.',
@@ -161,7 +220,7 @@ const svg = d => `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" st
 const IC = {c:'M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z',p:'M12 21s-6-5.3-6-10a6 6 0 0 1 12 0c0 4.7-6 10-6 10zM12 13a2 2 0 1 0 0-4 2 2 0 0 0 0 4z',x:'M18 6 6 18M6 6l12 12'};
 i1.innerHTML=svg(IC.c); i2.innerHTML=svg(IC.p); i3.innerHTML=svg(IC.x); i4.innerHTML=svg(IC.c);
 let t = {...PRESETS.Airtable}, labels = {...LABELS}, tab = 'ts';
-try { const s = JSON.parse(localStorage.getItem('fb-theme-v2')||'null'); if (s) { t = {...t, ...s.t}; labels = {...labels, ...s.labels}; } } catch {}
+try { const s = JSON.parse(localStorage.getItem('fb-theme-v3')||'null'); if (s) { t = {...t, ...s.t}; labels = {...labels, ...s.labels}; } } catch {}
 const colors = document.getElementById('colors');
 for (const [k, n] of COLORS) colors.insertAdjacentHTML('beforeend', `<label class="ctl">${n} <input type="color" data-k="${k}"></label>`);
 const presets = document.getElementById('presets');
@@ -172,11 +231,11 @@ document.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => { tab = b
 copy.onclick = async () => { try { await navigator.clipboard.writeText(code.textContent); copy.textContent = 'Copied'; } catch { copy.textContent = 'Select & copy'; } setTimeout(() => copy.textContent = 'Copy', 1400); };
 function lum(h){const c=[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255).map(v=>v<=.03928?v/12.92:((v+.055)/1.055)**2.4);return .2126*c[0]+.7152*c[1]+.0722*c[2];}
 const ratio=(a,b)=>{const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05);};
-function sync(){ document.querySelectorAll('[data-k]').forEach(el => el.value = t[el.dataset.k]); document.querySelectorAll('[data-l]').forEach(el => el.value = labels[el.dataset.l]); render(); }
+function sync(){ syncFont(); document.querySelectorAll('[data-k]').forEach(el => el.value = t[el.dataset.k]); document.querySelectorAll('[data-l]').forEach(el => el.value = labels[el.dataset.l]); render(); }
 function render(){
   const s = stage.style;
   s.setProperty('--fb-accent',t.accent); s.setProperty('--fb-on-accent',t.accentText); s.setProperty('--fb-ink',t.ink); s.setProperty('--fb-surface',t.surface);
-  s.setProperty('--fb-subtle',t.subtle); s.setProperty('--fb-border',t.border); s.setProperty('--fb-muted',t.muted); s.setProperty('--fb-font',t.font);
+  s.setProperty('--fb-subtle',t.subtle); s.setProperty('--fb-border',t.border); s.setProperty('--fb-muted',t.muted); s.setProperty('--fb-font', t.font === 'inherit' ? getComputedStyle(stage.querySelector('.mock')).fontFamily : t.font);
   s.setProperty('--fb-radius',t.radius+'px'); s.setProperty('--fb-fab-offset',t.fabOffset+'px'); s.setProperty('--fb-pin-radius',PIN[t.pinShape]);
   stage.dataset.fab = t.fabSide;
   stage.querySelectorAll('[data-label]').forEach(el => el.textContent = labels[el.dataset.label]);
@@ -186,14 +245,15 @@ function render(){
   if (ratio(t.ink,t.surface) < 4.5) w.push(`Ink / surface contrast ${ratio(t.ink,t.surface).toFixed(1)}:1 (aim for 4.5).`);
   if (ratio(t.muted,t.surface) < 4.5) w.push(`Secondary text contrast ${ratio(t.muted,t.surface).toFixed(1)}:1 (aim for 4.5).`);
   warn.textContent = w.join(' ');
-  const obj = JSON.stringify(t, null, 4).replace(/"(\w+)":/g, '$1:').replace(/"/g, "'");
+  const fontNote = t.font === 'inherit' ? '' : `\n// Font: your interface must load ${firstFamily(t.font)} itself. The layer doesn't fetch fonts, and many Airtable orgs block font CDNs.`;
+  const obj = JSON.stringify(t, null, 4).replace(/"(\w+)":/g, '$1:');
   const lbl = Object.entries(labels).filter(([k,v]) => v !== LABELS[k]);
   const lblTs = lbl.length ? `\nconst FEEDBACK_LABELS = {${lbl.map(([k,v]) => `${k}: ${JSON.stringify(v)}`).join(', ')}};` : '';
   const use = `<FeedbackLayer base={base} page="My Page" theme={FEEDBACK_THEME}${lbl.length ? ' labels={FEEDBACK_LABELS}' : ''} />`;
   code.textContent = tab === 'ts'
-    ? `// In feedback.tsx, replace FEEDBACK_THEME (or keep it and pass this as \`theme\`)\nexport const FEEDBACK_THEME: FeedbackTheme = ${obj};${lblTs}\n\n// In your App:\n${use}`
-    : `Add pinned review comments to this Airtable custom interface extension using airtable-interface-feedback (https://github.com/jpaulgale/airtable-interface-feedback).\n\n1. Copy src/feedback.tsx from the airtable-interface-feedback repo next to this extension's entry file.\n2. In feedback.tsx, set FEEDBACK_THEME to:\n${obj}\n3. Import { FeedbackLayer } from './feedback' and render ${use} once at the top level of the App, with a page name per interface page.${lbl.length ? `\n   Pass labels={${JSON.stringify(Object.fromEntries(lbl))}}.` : ''}\n4. Make sure the base has an "Interface Feedback" table: run \`AIRTABLE_PAT=... uv run scripts/create_table.py <baseId>\` from the repo (or create the fields listed in its README).\n5. Rebuild/release the extension, open the page, click the feedback button, leave a test comment, and confirm a record appears in the table.`;
-  try { localStorage.setItem('fb-theme-v2', JSON.stringify({t, labels})); } catch {}
+    ? `// In feedback.tsx, replace FEEDBACK_THEME (or keep it and pass this as \`theme\`)\nexport const FEEDBACK_THEME: FeedbackTheme = ${obj};${lblTs}${fontNote}\n\n// In your App:\n${use}`
+    : `Add pinned review comments to this Airtable custom interface extension using airtable-interface-feedback (https://github.com/jpaulgale/airtable-interface-feedback).\n\n1. Copy src/feedback.tsx from the airtable-interface-feedback repo next to this extension's entry file.\n2. In feedback.tsx, set FEEDBACK_THEME to:\n${obj}\n${t.font === 'inherit' ? '' : `   The theme uses ${firstFamily(t.font)}: make sure the interface already loads that font (bundle it or serve it from an Airtable attachment if the org blocks font CDNs).\n`}3. Import { FeedbackLayer } from './feedback' and render ${use} once at the top level of the App, with a page name per interface page.${lbl.length ? `\n   Pass labels={${JSON.stringify(Object.fromEntries(lbl))}}.` : ''}\n4. Make sure the base has an "Interface Feedback" table: run \`AIRTABLE_PAT=... uv run scripts/create_table.py <baseId>\` from the repo (or create the fields listed in its README).\n5. Rebuild/release the extension, open the page, click the feedback button, leave a test comment, and confirm a record appears in the table.`;
+  try { localStorage.setItem('fb-theme-v3', JSON.stringify({t, labels})); } catch {}
 }
 if (!CSS.supports('field-sizing','content')) stage.querySelectorAll('textarea').forEach(ta => { const g = () => { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + ta.offsetHeight - ta.clientHeight + 'px'; }; ta.addEventListener('input', g); g(); });
 // Outline the "At risk" card the way the layer does: its box plus 3px all round, measured from the real element.
