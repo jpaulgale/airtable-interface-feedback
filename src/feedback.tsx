@@ -54,7 +54,7 @@ const PIN_RADIUS = {drop: '50% 50% 50% 0', circle: '50%', square: '6px'};
 function fbThemeVars(t: FeedbackTheme): React.CSSProperties {
     return {
         '--fb-accent': t.accent, '--fb-on-accent': t.accentText, '--fb-ink': t.ink, '--fb-surface': t.surface, '--fb-subtle': t.subtle,
-        '--fb-border': t.border, '--fb-muted': t.muted, '--fb-font': t.font === 'inherit' ? getComputedStyle(document.body).fontFamily : t.font, '--fb-radius': `${t.radius}px`,
+        '--fb-border': t.border, '--fb-muted': t.muted, ...(t.font === 'inherit' ? {} : {'--fb-font': t.font}), '--fb-radius': `${t.radius}px`,
         '--fb-fab-offset': `${t.fabOffset}px`, '--fb-pin-radius': PIN_RADIUS[t.pinShape],
     } as React.CSSProperties;
 }
@@ -326,6 +326,12 @@ function FeedbackLayerInner({table, page, theme, build, L}: {table: Table; page:
     const [open, setOpen] = useState<string | null>(null);
     const [hover, setHover] = useState<DOMRect | null>(null);
     const [, tick] = useState(0);
+    // 'inherit': use the font of whatever the layer is rendered inside (apps often set it on a wrapper, not <body>).
+    const rootRef = useRef<HTMLDivElement>(null);
+    useLayoutEffect(() => {
+        const el = rootRef.current;
+        if (el && theme.font === 'inherit') el.style.setProperty('--fb-font', getComputedStyle(el.parentElement || document.body).fontFamily);
+    }, [theme.font]);
 
     useEffect(() => {
         if (!document.getElementById('fb-css')) {
@@ -437,7 +443,7 @@ function FeedbackLayerInner({table, page, theme, build, L}: {table: Table; page:
     const openNote = notes.find((n) => n.id === open) || null;
     const openAt = openNote ? fbPinPoint(openNote) : null;
     return (
-        <div className="fb-root" style={fbThemeVars(theme)} data-fab={theme.fabSide}>
+        <div ref={rootRef} className="fb-root" style={fbThemeVars(theme)} data-fab={theme.fabSide}>
             {mode && (
                 <div className="fb-banner" role="status">
                     <span><b>{L.modeTitle}</b> — {canWrite ? L.modeHint : L.modeHintReadOnly}</span>
