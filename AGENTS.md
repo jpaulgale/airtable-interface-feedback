@@ -11,3 +11,5 @@ Goal: add review comments to an Airtable interface extension.
 Don'ts: don't wrap the layer in a container with `transform` or `filter`, because that breaks `position: fixed`. Don't load other CSS that targets `.fb-*`. Don't remove the "table missing → render nothing" guard.
 
 To act on feedback: read the `Status = Open` records. `Context` tells you where the element is in the UI, and `Technical Detail` gives the component names and markup to search for. After fixing, write `Resolution` and set `Status = Resolved`.
+
+**AI-generated elements (Airtable MCP `build_custom_element` / `create_page`):** the page's `configByTableId` must include the Interface Feedback table with all of its field IDs in `visibleFieldIds`, or the layer can't read or write notes. Pass the `editability` returned by the build through to `create_page`.
