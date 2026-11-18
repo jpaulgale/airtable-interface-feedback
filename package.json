@@ -1,7 +1,7 @@
 {
   "name": "airtable-interface-feedback",
   "version": "1.0.0",
-  "description": "Google Docs-style review comments for Airtable custom interfaces, saved to an Airtable table",
+  "description": "Figma-style pinned comments for Airtable custom interfaces, saved as records in your base",
   "directories": {
     "example": "example"
   },
