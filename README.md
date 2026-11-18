@@ -26,7 +26,7 @@ Google Docs-style review comments for **Airtable custom interface extensions**. 
        </>;
    }
    ```
-4. **Theme it** (optional): open `playground/index.html`, choose colours, radius, font, pin shape, button corner and labels. Then copy the **Theme (TS)** output over `FEEDBACK_THEME` in `feedback.tsx`, or pass it as the `theme` prop.
+4. **Theme it** (optional): open `playground/index.html`, choose colours, radius, font, pin shape, button corner and any of the text. Then copy the **Theme (TS)** output over `FEEDBACK_THEME` in `feedback.tsx`, or pass it as the `theme` prop.
 
 Releasing to Airtable works the same as for any other change (`block release`, or your usual AI-element flow).
 
@@ -41,7 +41,7 @@ Open the playground, set the theme, switch to **Agent prompt** and copy it. The 
 | `base` | required | From `useBase()` |
 | `page` | required | Page name stored on each note. Pins only show on their own page. |
 | `theme` | `FEEDBACK_THEME` | `Partial<FeedbackTheme>`, merged over the default |
-| `labels` | `FB_LABELS` | `button`, `exit`, `modeTitle`, `modeHint`, `modeHintReadOnly` |
+| `labels` | `FB_LABELS` | `Partial<FeedbackLabels>`: every string the layer shows (button, banner, menu, composer, reply, buttons). The playground writes this for you. |
 | `tableName` | `"Interface Feedback"` | |
 | `build` | `"dev"` | Stamped on every note, for example a git SHA or release date, so you know which build was reviewed |
 

@@ -12,7 +12,7 @@
 // Context trail (section › table › row › column › control), a Technical Detail block for whoever (or whatever
 // agent) fixes it — HTML snippet, React component names, computed styles, page state — and the Build it was left on.
 // Replies: one long-text cell per note, oldest first, each headed "— Name · date time". Resolve → Status = Resolved.
-import React, {useEffect, useMemo, useRef, useState} from 'react';
+import React, {useEffect, useLayoutEffect, useMemo, useRef, useState} from 'react';
 import {useRecords, useSession} from '@airtable/blocks/interface/ui';
 import {type Base, type Table} from '@airtable/blocks/interface/models';
 
@@ -22,15 +22,22 @@ export type FeedbackTheme = {
     font: string; radius: number; fabSide: 'left' | 'right'; fabOffset: number; pinShape: 'drop' | 'circle' | 'square';
 };
 export const FEEDBACK_THEME: FeedbackTheme = {
-    accent: '#4f46e5', accentText: '#ffffff', ink: '#18181b', surface: '#ffffff', subtle: '#f4f4f5', border: '#d4d4d8',
-    muted: '#71717a', font: 'system-ui, sans-serif', radius: 10, fabSide: 'left', fabOffset: 16, pinShape: 'drop',
+    accent: '#166ee1', accentText: '#ffffff', ink: '#1d1f25', surface: '#ffffff', subtle: '#f2f4f8', border: '#d0d4dc',
+    muted: '#616670', font: 'Inter, system-ui, sans-serif', radius: 8, fabSide: 'left', fabOffset: 16, pinShape: 'circle',
 };
+// Every piece of text the layer shows. Override any of them with the `labels` prop (the playground writes this for you).
 export const FB_LABELS = {
     button: 'Leave Comments', exit: 'Exit comment mode', modeTitle: 'Comment mode',
     modeHint: 'click anything on the page to leave a comment.', modeHintReadOnly: 'click a pin to read a comment.',
+    menuHere: 'Leave a comment here', menuSelection: 'Leave a comment on selected text', menuShowAll: 'Show all comments',
+    composerTitle: 'Leave a comment', composerPlaceholder: 'What should change here?',
+    composerHint: 'Enter to save, Shift+Enter for a new line. Everyone can see this comment.',
+    cancel: 'Cancel', save: 'Save comment', saving: 'Saving…',
+    replyPlaceholder: 'Reply…', reply: 'Reply', sending: 'Sending…', close: 'Close', resolve: 'Mark resolved',
 };
+export type FeedbackLabels = typeof FB_LABELS;
 export type FeedbackLayerProps = {
-    base: Base; page: string; theme?: Partial<FeedbackTheme>; tableName?: string; build?: string; labels?: Partial<typeof FB_LABELS>;
+    base: Base; page: string; theme?: Partial<FeedbackTheme>; tableName?: string; build?: string; labels?: Partial<FeedbackLabels>;
 };
 const FB_TABLE = 'Interface Feedback';
 // Field names in that table. Missing optional fields are skipped, so a minimal table (Comment, Page, Anchor,
@@ -81,7 +88,7 @@ const FB_CSS = `
 .fb-card *{cursor:auto}
 .fb-card h3{margin:0;font-size:15px}
 .fb-quote{margin:0;padding:6px 10px;border-left:3px solid var(--fb-accent);background:var(--fb-subtle);color:var(--fb-muted);font-size:13px;max-height:60px;overflow:hidden;overflow-wrap:anywhere}
-.fb-card textarea{width:100%;box-sizing:border-box;min-height:90px;padding:8px;border:1px solid var(--fb-border);border-radius:calc(var(--fb-radius) - 4px);background:var(--fb-surface);color:var(--fb-ink);font:inherit;resize:vertical}
+.fb-card textarea{width:100%;box-sizing:border-box;field-sizing:content;min-height:4lh;max-height:40vh;overflow-y:auto;padding:8px;border:1px solid var(--fb-border);border-radius:calc(var(--fb-radius) - 4px);background:var(--fb-surface);color:var(--fb-ink);font:inherit;line-height:1.4;resize:none}
 .fb-meta{font-size:12px;color:var(--fb-muted)}
 .fb-row{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
 .fb-btn{padding:8px 14px;border-radius:calc(var(--fb-radius) - 4px);border:1px solid var(--fb-border);background:var(--fb-surface);color:var(--fb-ink);font:600 13px var(--fb-font);cursor:pointer}
@@ -90,7 +97,7 @@ const FB_CSS = `
 .fb-note{max-height:min(560px,calc(100vh - 32px));overflow-y:auto}
 .fb-thread{list-style:none;margin:0;padding:0 0 0 10px;border-left:2px solid var(--fb-border);display:grid;gap:10px}
 .fb-reply{display:flex;gap:8px;align-items:flex-end}
-.fb-reply textarea{min-height:38px;height:38px;flex:1}
+.fb-reply textarea{min-height:calc(1lh + 18px);flex:1}
 .fb-err{color:#b00020;font-size:13px}
 .fb-pin{position:fixed;z-index:2147483000;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:var(--fb-pin-radius);border:2px solid var(--fb-surface);background:var(--fb-accent);color:var(--fb-on-accent);font:700 12px/22px system-ui,sans-serif;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.3);cursor:pointer!important;padding:0}
 .fb-pin[aria-expanded=true]{background:var(--fb-ink);color:var(--fb-surface)}
@@ -290,7 +297,7 @@ export function FeedbackLayer({base, page, theme, tableName = FB_TABLE, build = 
     const table = base.getTableByNameIfExists(tableName);
     return table ? <FeedbackLayerInner table={table} page={page} theme={{...FEEDBACK_THEME, ...theme}} build={build} L={{...FB_LABELS, ...labels}} /> : null;
 }
-function FeedbackLayerInner({table, page, theme, build, L}: {table: Table; page: string; theme: FeedbackTheme; build: string; L: typeof FB_LABELS}): React.ReactElement {
+function FeedbackLayerInner({table, page, theme, build, L}: {table: Table; page: string; theme: FeedbackTheme; build: string; L: FeedbackLabels}): React.ReactElement {
     const session = useSession();
     const user = session?.currentUser ?? null;
     const records = useRecords(table);
@@ -460,24 +467,24 @@ function FeedbackLayerInner({table, page, theme, build, L}: {table: Table; page:
                             ))}
                         </ol>
                     )}
-                    {table.hasPermissionToUpdateRecords() && f('replies') && <FbReplyBox key={openNote.id} onSend={(t) => reply(openNote.id, t)} />}
+                    {table.hasPermissionToUpdateRecords() && f('replies') && <FbReplyBox key={openNote.id} L={L} onSend={(t) => reply(openNote.id, t)} />}
                     <div className="fb-row">
-                        <button type="button" className="fb-btn" onClick={() => setOpen(null)}>Close</button>
-                        {table.hasPermissionToUpdateRecords() && <button type="button" className="fb-btn" onClick={() => resolve(openNote.id)}>Mark resolved</button>}
+                        <button type="button" className="fb-btn" onClick={() => setOpen(null)}>{L.close}</button>
+                        {table.hasPermissionToUpdateRecords() && <button type="button" className="fb-btn" onClick={() => resolve(openNote.id)}>{L.resolve}</button>}
                     </div>
                 </div>
             )}
             {menu && (
                 <FbDismiss onDismiss={() => setMenu(null)}>
                     <div className="fb-menu" role="menu" style={fbClamp(menu.x, menu.y, 260, 160)}>
-                        <button type="button" role="menuitem" autoFocus onClick={() => { setDraft(menu.draft); setMenu(null); }}><FbIconComment /> {menu.draft.selected ? 'Leave a comment on selected text' : 'Leave a comment here'}</button>
+                        <button type="button" role="menuitem" autoFocus onClick={() => { setDraft(menu.draft); setMenu(null); }}><FbIconComment /> {menu.draft.selected ? L.menuSelection : L.menuHere}</button>
                         <button type="button" role="menuitem" onClick={() => { setMode(true); setMenu(null); }}>
-                            <FbIconPins /> {mode ? 'Showing' : 'Show'} all comments ({notes.length})
+                            <FbIconPins /> {L.menuShowAll} ({notes.length})
                         </button>
                     </div>
                 </FbDismiss>
             )}
-            {draft && <FbComposer draft={draft} onCancel={() => setDraft(null)}
+            {draft && <FbComposer draft={draft} L={L} onCancel={() => setDraft(null)}
                 onSave={async (text) => { await save(draft, text); setDraft(null); }} />}
             {/* Compact: accent pill with the chat icon (and a count of open notes); the label slides out on hover or
                 keyboard focus, and stays out in comment mode so "Exit comment mode" is always visible. */}
@@ -493,6 +500,19 @@ function FeedbackLayerInner({table, page, theme, build, L}: {table: Table; page:
         </div>
     );
 }
+// Text boxes grow with what's typed, like Google Docs. CSS `field-sizing: content` does it natively (Chromium);
+// elsewhere this sizes the box to its scrollHeight on every change. max-height in the CSS caps both, then it scrolls.
+const FB_FIELD_SIZING = typeof CSS !== 'undefined' && CSS.supports('field-sizing', 'content');
+function useAutoGrow(value: string): React.RefObject<HTMLTextAreaElement> {
+    const ref = useRef<HTMLTextAreaElement>(null);
+    useLayoutEffect(() => {
+        const el = ref.current;
+        if (!el || FB_FIELD_SIZING) return;
+        el.style.height = 'auto';
+        el.style.height = `${el.scrollHeight + el.offsetHeight - el.clientHeight}px`;
+    }, [value]);
+    return ref;
+}
 function FbDismiss({onDismiss, children}: {onDismiss: () => void; children: React.ReactNode}): React.ReactElement {
     const ref = useRef<HTMLDivElement>(null);
     useEffect(() => {
@@ -502,8 +522,9 @@ function FbDismiss({onDismiss, children}: {onDismiss: () => void; children: Reac
     }, [onDismiss]);
     return <div ref={ref}>{children}</div>;
 }
-function FbReplyBox({onSend}: {onSend: (t: string) => Promise<void>}): React.ReactElement {
+function FbReplyBox({L, onSend}: {L: FeedbackLabels; onSend: (t: string) => Promise<void>}): React.ReactElement {
     const [text, setText] = useState('');
+    const grow = useAutoGrow(text);
     const [busy, setBusy] = useState(false);
     const [err, setErr] = useState('');
     const send = async () => {
@@ -516,16 +537,17 @@ function FbReplyBox({onSend}: {onSend: (t: string) => Promise<void>}): React.Rea
     return (
         <div>
             <div className="fb-reply">
-                <textarea aria-label="Reply" placeholder="Reply…" value={text} onChange={(e) => setText(e.target.value)}
+                <textarea ref={grow} rows={1} aria-label={L.reply} placeholder={L.replyPlaceholder} value={text} onChange={(e) => setText(e.target.value)}
                     onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); send(); } }} />
-                <button type="button" className="fb-btn fb-primary" disabled={!text.trim() || busy} onClick={send}>{busy ? 'Sending…' : 'Reply'}</button>
+                <button type="button" className="fb-btn fb-primary" disabled={!text.trim() || busy} onClick={send}>{busy ? L.sending : L.reply}</button>
             </div>
             {err && <div className="fb-err" role="alert">{err}</div>}
         </div>
     );
 }
-function FbComposer({draft, onCancel, onSave}: {draft: FbDraft; onCancel: () => void; onSave: (t: string) => Promise<void>}): React.ReactElement {
+function FbComposer({draft, L, onCancel, onSave}: {draft: FbDraft; L: FeedbackLabels; onCancel: () => void; onSave: (t: string) => Promise<void>}): React.ReactElement {
     const [text, setText] = useState('');
+    const grow = useAutoGrow(text);
     const [busy, setBusy] = useState(false);
     const [err, setErr] = useState('');
     const submit = async () => {
@@ -535,16 +557,16 @@ function FbComposer({draft, onCancel, onSave}: {draft: FbDraft; onCancel: () => 
         try { await onSave(text.trim()); } catch (e) { setErr(`Couldn't save: ${(e as Error).message || e}`); setBusy(false); }
     };
     return (
-        <div className="fb-card" role="dialog" aria-label="Leave a comment" style={fbClamp(draft.cx + 12, draft.cy + 12)}>
-            <h3>Leave a comment</h3>
+        <div className="fb-card" role="dialog" aria-label={L.composerTitle} style={fbClamp(draft.cx + 12, draft.cy + 12)}>
+            <h3>{L.composerTitle}</h3>
             {draft.text && <p className="fb-quote">{draft.text}</p>}
-            <textarea autoFocus value={text} placeholder="What should change here?" onChange={(e) => setText(e.target.value)}
+            <textarea ref={grow} autoFocus value={text} placeholder={L.composerPlaceholder} onChange={(e) => setText(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); submit(); } }} />
-            <div className="fb-meta">Enter to save, Shift+Enter for a new line. Everyone can see this comment.</div>
+            <div className="fb-meta">{L.composerHint}</div>
             {err && <div className="fb-err" role="alert">{err}</div>}
             <div className="fb-row">
-                <button type="button" className="fb-btn" onClick={onCancel}>Cancel</button>
-                <button type="button" className="fb-btn fb-primary" disabled={!text.trim() || busy} onClick={submit}>{busy ? 'Saving…' : 'Save comment'}</button>
+                <button type="button" className="fb-btn" onClick={onCancel}>{L.cancel}</button>
+                <button type="button" className="fb-btn fb-primary" disabled={!text.trim() || busy} onClick={submit}>{busy ? L.saving : L.save}</button>
             </div>
         </div>
     );

@@ -2,7 +2,7 @@ import React from 'react';
 import {initializeBlock, useBase} from '@airtable/blocks/interface/ui';
 import {FeedbackLayer} from '../src/feedback';
 
-const THEME = {accent: '#166ee1', pinShape: 'circle'} as const; // any subset of FeedbackTheme
+const THEME = {pinShape: "drop"} as const; // any subset of FeedbackTheme, merged over FEEDBACK_THEME
 
 function App(): React.ReactElement {
     const base = useBase();
