@@ -149,7 +149,9 @@ function fbContext(el: Element, page: string): string {
         const all = [...document.querySelectorAll('h1,h2,h3,h4')].filter((h) => !fbIsOurs(h));
         head = all.filter((h) => h.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING).pop() || null;
     }
-    if (head && !dialog) parts.push(`section "${fbTxt(head, 60)}"`);
+    const secName = sec?.getAttribute('aria-label') || (sec?.getAttribute('aria-labelledby') && fbTxt(document.getElementById(sec.getAttribute('aria-labelledby')!), 60));
+    if (secName && !dialog) parts.push(`section "${secName.slice(0, 60)}"`);
+    else if (head && !dialog) parts.push(`section "${fbTxt(head, 60)}"`);
     const tab = el.closest('[role=tabpanel]');
     if (tab) { const id = tab.getAttribute('aria-labelledby'); const t = id && document.getElementById(id); if (t) parts.push(`tab "${fbTxt(t, 40)}"`); }
     const cell = el.closest('td,th,[role=cell],[role=gridcell],[role=columnheader]');
@@ -193,8 +195,9 @@ function fbComponents(el: Element): string {
     for (let f = key ? (el as any)[key] : null; f && names.length < 8; f = f.return) {
         const t = f.type;
         const n = typeof t === 'function' ? t.displayName || t.name : t && typeof t === 'object' ? t.displayName || t.render?.name || t.type?.name : '';
-        if (n && n.length > 1 && /^[A-Z]/.test(n) && !/^(Fb|Feedback)/.test(n) && names[names.length - 1] !== n) names.push(n);
+        if (n && n.length > 3 && /^[A-Z]/.test(n) && !/^(Fb|Feedback)/.test(n) && names[names.length - 1] !== n) names.push(n);
     }
+    // Production bundles minify component names ("NS"), so short names are dropped; say so rather than mislead.
     return names.join(' < ');
 }
 function fbStyles(el: Element): string {
@@ -240,7 +243,7 @@ function fbTech(el: Element, cx: number, cy: number, selected?: string): string 
     return [
         `HTML: ${html.length > 1500 ? html.slice(0, 1500) + ' …' : html}`,
         ...(selected ? [`Selected text: "${selected}"`] : []),
-        `React components: ${fbComponents(el) || '(none found)'}`,
+        `React components: ${fbComponents(el) || '(none found — names are minified in production builds)'}`,
         `Ancestors: ${ancestors.join(' < ')}`,
         `Computed style: ${fbStyles(el)}`,
         `State: ${JSON.stringify(state, null, 1)}`,
