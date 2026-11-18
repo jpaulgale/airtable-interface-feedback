@@ -1,5 +1,8 @@
 # airtable-interface-feedback
 
+<p align="center"><img src="docs/demo.webp" alt="Comment mode on an Airtable custom interface: hover an element, click it, type a note, and a numbered pin appears" width="900"></p>
+<p align="center"><sub><a href="docs/demo.webm">Full-quality video (WebM)</a></sub></p>
+
 **Figma-style pinned comments for Airtable custom interfaces.** Testers click anything, leave a note, and reply in threads. Every note is saved as a record in your base, with the technical detail a developer or agent needs to fix it. Think BugHerd or Marker.io, but the feedback lives in Airtable.
 
 - **One file:** `src/feedback.tsx`. It uses only React and `@airtable/blocks/interface`, has no other dependencies, and injects its own CSS.
